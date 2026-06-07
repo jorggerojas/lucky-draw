@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import rollDice from "./roll-dice";
+import rollDice, { rollSingleDie } from "./roll-dice";
 
 describe("rollDice", () => {
   it("rolls the requested quantity with the requested sides", () => {
@@ -11,5 +11,9 @@ describe("rollDice", () => {
 
   it("defaults to one six-sided die", () => {
     expect(rollDice({ random: () => 0 })).toEqual([1]);
+  });
+
+  it("rolls a single six-sided die", () => {
+    expect(rollSingleDie(() => 0.99)).toBe(6);
   });
 });

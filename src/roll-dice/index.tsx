@@ -1,88 +1,87 @@
-import { Action, ActionPanel, Detail, Form, Toast, showToast } from "@raycast/api";
-import { useMemo, useState } from "react";
+import { Action, ActionPanel, Detail } from "@raycast/api";
+import { useEffect, useState } from "react";
 
-import { parsePositiveInteger } from "../shared";
-import rollDice from "./roll-dice";
+import { DICE_SPIN_FRAMES, FRAME_DURATION_MS, ROLL_DURATION_MS } from "./constants";
+import { buildRollLabels, formatRollingMarkdown, formatRollDiceMarkdown, rollSingleDie } from "./roll-dice";
 
-type RollDiceFormValues = {
-  quantity: string;
-  sides: string;
-};
+import type { DiceResult } from "./types";
 
-type RollDiceResult = {
-  quantity: number;
-  rolls: number[];
-  sides: number;
-};
-
-function formatRollDiceMarkdown({ quantity, rolls, sides }: RollDiceResult): string {
-  const total = rolls.reduce((sum, roll) => sum + roll, 0);
-
-  return `# 🎲 ${total}\n\n**${quantity}d${sides}** → ${rolls.join(", ")}\n\nTap **Roll Again** for another throw.`;
-}
-
-function RollDiceResultView({ onReset, result }: { onReset: () => void; result: RollDiceResult }) {
-  const total = useMemo(() => result.rolls.reduce((sum, roll) => sum + roll, 0), [result.rolls]);
-
+function RollDiceStartView({ onRoll }: { onRoll: () => void }) {
   return (
     <Detail
       actions={
         <ActionPanel>
-          <Action.CopyToClipboard content={String(total)} title="Copy Total" />
-          <Action.CopyToClipboard content={result.rolls.join(", ")} title="Copy Rolls" />
-          <Action title="Roll Again" onAction={onReset} />
+          <Action title="Roll Die" onAction={onRoll} />
         </ActionPanel>
       }
-      markdown={formatRollDiceMarkdown(result)}
+      markdown={`# Roll a Die\n\nPress **Roll Die** to throw a six-sided die and reveal the result.`}
     />
   );
 }
 
 export default function RollDiceCommand() {
-  const [formValues, setFormValues] = useState<RollDiceFormValues>({ quantity: "1", sides: "6" });
-  const [result, setResult] = useState<RollDiceResult | null>(null);
+  const [result, setResult] = useState<DiceResult | null>(null);
+  const [isRolling, setIsRolling] = useState(false);
+  const [frameIndex, setFrameIndex] = useState(0);
+  const [rollLabels, setRollLabels] = useState<string[]>(() => buildRollLabels(DICE_SPIN_FRAMES.length));
 
-  async function handleSubmit(values: RollDiceFormValues) {
-    try {
-      const quantity = parsePositiveInteger(values.quantity, "quantity");
-      const sides = parsePositiveInteger(values.sides, "sides");
-
-      const rolls = rollDice({ quantity, sides });
-      setFormValues(values);
-      setResult({ quantity, rolls, sides });
-    } catch (error) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Invalid dice",
-        message: error instanceof Error ? error.message : "Unable to roll dice.",
-      });
+  useEffect(() => {
+    if (!isRolling) {
+      return;
     }
+
+    setResult(null);
+    setFrameIndex(0);
+
+    const frameInterval = setInterval(() => {
+      setFrameIndex((current) => (current < DICE_SPIN_FRAMES.length - 1 ? current + 1 : current));
+    }, FRAME_DURATION_MS);
+
+    const finishTimeout = setTimeout(() => {
+      clearInterval(frameInterval);
+      setResult(rollSingleDie());
+      setIsRolling(false);
+    }, ROLL_DURATION_MS);
+
+    return () => {
+      clearInterval(frameInterval);
+      clearTimeout(finishTimeout);
+    };
+  }, [isRolling]);
+
+  function handleRoll() {
+    if (isRolling) {
+      return;
+    }
+
+    setRollLabels(buildRollLabels(DICE_SPIN_FRAMES.length));
+    setIsRolling(true);
   }
 
-  if (result !== null) {
+  if (isRolling) {
     return (
-      <RollDiceResultView
-        onReset={() =>
-          setResult({
-            ...result,
-            rolls: rollDice({ quantity: result.quantity, sides: result.sides }),
-          })
-        }
-        result={result}
+      <Detail
+        markdown={formatRollingMarkdown(
+          frameIndex,
+          rollLabels[frameIndex] ?? rollLabels[0] ?? "Rolling the impossible",
+        )}
       />
     );
   }
 
+  if (result === null) {
+    return <RollDiceStartView onRoll={handleRoll} />;
+  }
+
   return (
-    <Form
+    <Detail
       actions={
         <ActionPanel>
-          <Action.SubmitForm onSubmit={handleSubmit} title="Roll Dice" />
+          <Action title="Roll Again" onAction={handleRoll} />
+          <Action.CopyToClipboard content={String(result)} title="Copy Result" />
         </ActionPanel>
       }
-    >
-      <Form.TextField defaultValue={formValues.quantity} id="quantity" placeholder="1" title="Quantity" />
-      <Form.TextField defaultValue={formValues.sides} id="sides" placeholder="6" title="Sides" />
-    </Form>
+      markdown={formatRollDiceMarkdown(result)}
+    />
   );
 }
