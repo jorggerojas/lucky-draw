@@ -1,10 +1,13 @@
-export type PickRandomItemOptions = {
-  items: string[] | string;
-};
+import type { PickRandomItemOptions } from "./types";
+
+export function sanitizeItem(value: string): string {
+  return value.trim();
+}
+
+export function removeItemAtIndex(items: string[], index: number): string[] {
+  return items.filter((_, currentIndex) => currentIndex !== index);
+}
 
 export default function pickRandomItem({ items }: PickRandomItemOptions) {
-  if (typeof items === "string") {
-    return pickRandomItem({ items: items.split(",").map((item) => item.trim()) });
-  }
   return items[Math.floor(Math.random() * items.length)];
 }
