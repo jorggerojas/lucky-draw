@@ -1,1 +1,1 @@
-export { default } from "./spin-decision-wheel/index";
+export { default } from "./spin-wheel";

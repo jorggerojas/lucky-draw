@@ -44,13 +44,6 @@
       "mode": "view"
     },
     {
-      "name": "shuffle-list",
-      "title": "Shuffle List",
-      "subtitle": "Randomize item order",
-      "description": "Shuffle and randomize a custom list instantly.",
-      "mode": "view"
-    },
-    {
       "name": "spin-decision-wheel",
       "title": "Spin Decision Wheel",
       "subtitle": "Make random decisions visually",
