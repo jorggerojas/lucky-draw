@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { formatTodayInHistoryEmptyMarkdown, formatTodayInHistoryErrorMarkdown, formatTodayInHistoryMarkdown } from "./today-in-history";
+import {
+  formatTodayInHistoryEmptyMarkdown,
+  formatTodayInHistoryErrorMarkdown,
+  formatTodayInHistoryMarkdown,
+} from "./today-in-history";
 
 describe("today-in-history formatters", () => {
   it("builds markdown for content and empty/error states", () => {

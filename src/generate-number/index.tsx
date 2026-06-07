@@ -2,37 +2,45 @@ import { Action, ActionPanel, Detail, Form, Toast, showToast } from "@raycast/ap
 import { useState } from "react";
 
 import { parseInclusiveRange } from "../shared";
-import generateNumber from "./generate-number";
+import generateNumber, { formatGenerateNumberMarkdown } from "./generate-number";
+import type { GenerateNumberFormValues } from "./types";
 
-type GenerateNumberFormValues = {
-  max: string;
-  min: string;
-};
-
+// View for the generated number result.
 function GenerateNumberResult({
-  onReset,
+  onChangeSettings,
+  onGenerateAgain,
   value,
 }: {
-  onReset: () => void;
+  onChangeSettings: () => void;
+  onGenerateAgain: () => void;
   value: number;
 }) {
   return (
     <Detail
       actions={
         <ActionPanel>
-          <Action.CopyToClipboard content={String(value)} title="Copy Number" />
-          <Action title="Generate Again" onAction={onReset} />
+          <Action
+            key="return"
+            onAction={onGenerateAgain}
+            shortcut={{ key: "return", modifiers: [] }}
+            title="Generate Again"
+          />
+          <Action title="Change Settings" onAction={onChangeSettings} />
         </ActionPanel>
       }
-      markdown={`# ${value}`}
+      markdown={formatGenerateNumberMarkdown(value)}
     />
   );
 }
 
+// Main command for generating a number.
 export default function GenerateNumberCommand() {
-  const [defaultValues, setDefaultValues] = useState<GenerateNumberFormValues>({ max: "", min: "" });
+  const [defaultValues, setDefaultValues] = useState<GenerateNumberFormValues>({ max: "10", min: "1" });
   const [value, setValue] = useState<number | null>(null);
 
+  /**
+   * Handle the generation of a number from the submitted range.
+   */
   async function handleSubmit(values: GenerateNumberFormValues) {
     try {
       const range = parseInclusiveRange(values.min, values.max);
@@ -47,20 +55,56 @@ export default function GenerateNumberCommand() {
     }
   }
 
-  if (value !== null) {
-    return <GenerateNumberResult onReset={() => setValue(null)} value={value} />;
+  /**
+   * Handle generating another number with the current range.
+   */
+  function handleGenerateAgain() {
+    const range = parseInclusiveRange(defaultValues.min, defaultValues.max);
+    setValue(generateNumber(range));
   }
 
+  /**
+   * Render the generated number result.
+   */
+  if (value !== null) {
+    return (
+      <GenerateNumberResult
+        onChangeSettings={() => setValue(null)}
+        onGenerateAgain={handleGenerateAgain}
+        value={value}
+      />
+    );
+  }
+
+  /**
+   * Render the range form.
+   */
   return (
     <Form
       actions={
         <ActionPanel>
-          <Action.SubmitForm onSubmit={handleSubmit} title="Generate Number" />
+          <Action.SubmitForm
+            onSubmit={handleSubmit}
+            shortcut={{ key: "return", modifiers: [] }}
+            title="Generate Number"
+          />
         </ActionPanel>
       }
     >
-      <Form.TextField defaultValue={defaultValues.min} id="min" placeholder="e.g. 1" title="Minimum" />
-      <Form.TextField defaultValue={defaultValues.max} id="max" placeholder="e.g. 10" title="Maximum" />
+      <Form.TextField
+        defaultValue={defaultValues.min}
+        id="min"
+        placeholder="e.g. 1"
+        title="Minimum"
+        autoFocus={false}
+      />
+      <Form.TextField
+        defaultValue={defaultValues.max}
+        id="max"
+        placeholder="e.g. 10"
+        title="Maximum"
+        autoFocus={false}
+      />
     </Form>
   );
 }

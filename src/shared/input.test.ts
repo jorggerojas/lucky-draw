@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  parseInclusiveRange,
-  parsePositiveInteger,
-  requireNonEmptyInput,
-  splitInputList,
-  trimInput,
-} from "./input";
+import { parseInclusiveRange, parsePositiveInteger, requireNonEmptyInput, splitInputList, trimInput } from "./input";
 
 describe("shared/input", () => {
   it("trims whitespace and splits lists", () => {

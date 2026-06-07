@@ -8,7 +8,7 @@ import {
   formatTodayInHistoryMarkdown,
 } from "./today-in-history";
 import { fetchTodayInHistory, TodayInHistoryError } from "./service";
-import type { TodayInHistorySelection, TodayInHistorySource } from "./types";
+import type { TodayInHistoryEvent, TodayInHistorySelection, TodayInHistorySource } from "./types";
 
 type TodayInHistoryState =
   | { readonly kind: "loading" }
@@ -52,26 +52,28 @@ function TodayInHistoryView({ state, onRefresh }: { onRefresh: () => void; state
   }
 
   const { event, source } = state;
-  const openUrl = event.itemUrl ?? source.homepageUrl;
+  const openUrl = event?.itemUrl ?? source.homepageUrl;
 
   return (
     <Detail
       actions={
         <ActionPanel>
           {openUrl ? <Action.OpenInBrowser title="Open Link" url={openUrl} /> : null}
-          <Action.CopyToClipboard content={event.title} title="Copy Title" />
-          <Action title="Do it again" onAction={onRefresh} />
+          <Action.CopyToClipboard content={event?.title ?? ""} title="Copy Title" />
+          <Action title="Do It Again" onAction={onRefresh} />
         </ActionPanel>
       }
-      markdown={formatTodayInHistoryMarkdown(source, event)}
+      markdown={formatTodayInHistoryMarkdown(source, event ?? ({ title: "" } as TodayInHistoryEvent))}
       metadata={
         <Detail.Metadata>
-          {event.year ? <Detail.Metadata.Label title="Year" text={event.year} /> : null}
+          {event?.year ? <Detail.Metadata.Label title="Year" text={event.year ?? ""} /> : null}
           <Detail.Metadata.Label title="Source" text={source.name} />
           {source.homepageUrl ? (
             <Detail.Metadata.Link target={source.homepageUrl} text={source.homepageUrl} title="Source Link" />
           ) : null}
-          {event.itemUrl ? <Detail.Metadata.Link target={event.itemUrl} text={event.itemUrl} title="Item Link" /> : null}
+          {event?.itemUrl ? (
+            <Detail.Metadata.Link target={event.itemUrl} text={event.itemUrl} title="Item Link" />
+          ) : null}
         </Detail.Metadata>
       }
     />
