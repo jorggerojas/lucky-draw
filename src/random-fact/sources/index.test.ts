@@ -4,18 +4,18 @@ import {
   HISTORY_MUFFINLABS_SOURCE,
   NASA_APOD_SOURCE,
   QUOTABLE_SOURCE,
-  TODAY_IN_HISTORY_SOURCES,
+  RANDOM_FACT_SOURCES,
   USELESS_FACTS_SOURCE,
   WIKIFEEDS_SOURCE,
   ZEN_QUOTES_SOURCE,
-  pickTodayInHistorySource,
-} from "./sources";
+  pickRandomFactSource,
+} from ".";
 
-describe("today-in-history sources", () => {
+describe("random-fact sources", () => {
   it("selects sources deterministically", () => {
-    expect(pickTodayInHistorySource(() => 0)).toBe(NASA_APOD_SOURCE);
-    expect(pickTodayInHistorySource(() => 0.999)).toBe(HISTORY_MUFFINLABS_SOURCE);
-    expect(TODAY_IN_HISTORY_SOURCES).toHaveLength(6);
+    expect(pickRandomFactSource(() => 0)).toBe(NASA_APOD_SOURCE);
+    expect(pickRandomFactSource(() => 0.999)).toBe(HISTORY_MUFFINLABS_SOURCE);
+    expect(RANDOM_FACT_SOURCES).toHaveLength(6);
   });
 
   it("normalizes NASA APOD payloads", () => {
@@ -44,7 +44,7 @@ describe("today-in-history sources", () => {
     });
 
     expect(QUOTABLE_SOURCE.parse({ _id: "abc", author: "Ada", content: "Quote." })[0]).toEqual({
-      description: "— Ada",
+      description: "- Ada",
       itemUrl: "https://api.quotable.io/quotes/abc",
       title: "Quote.",
     });
@@ -53,7 +53,7 @@ describe("today-in-history sources", () => {
   it("normalizes quote and history feeds", () => {
     expect(ZEN_QUOTES_SOURCE.parse([{ a: "Zen", q: "Breathe." }])).toEqual([
       {
-        description: "— Zen",
+        description: "- Zen",
         title: "Breathe.",
       },
     ]);

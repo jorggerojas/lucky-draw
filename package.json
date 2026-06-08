@@ -51,10 +51,10 @@
       "mode": "view"
     },
     {
-      "name": "today-in-history",
-      "title": "Today in History",
-      "subtitle": "Discover historical events",
-      "description": "Explore notable events that happened on this day.",
+      "name": "random-fact",
+      "title": "Random Fact",
+      "subtitle": "Discover something unexpected",
+      "description": "Explore a random fact pulled from rotating knowledge sources.",
       "mode": "view"
     }
   ],
