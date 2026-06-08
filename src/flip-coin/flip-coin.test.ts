@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import flipCoin from "./flip-coin";
+import { flipCoin } from "./flip-coin";
 
 describe("flipCoin", () => {
   it("returns heads for higher random values", () => {
